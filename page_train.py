@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 
@@ -14,13 +13,45 @@ from pipelines.trainer import (
     load_processed,
     prep_data
 )
-# from pipelines.train_focal import train_focal_model
 from pipelines.evaluate import compare_models
 from pipelines.model_selector import select_best
 from models.voting_classifier import get_voting
 
 from utils.save_load import save_model
 from utils.plot_all import plot_all_metrics, plot_comparison_heatmap
+
+import io
+
+
+# ============================================================
+# Convert Matplotlib figure → PNG bytes for Streamlit
+# ============================================================
+def fig_to_bytes(fig):
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=110, bbox_inches="tight")
+    buf.seek(0)
+    return buf
+
+
+# ============================================================
+# Display all evaluation plots (ROC / PR / Hist / CM)
+# in 2 columns WITHOUT repetition
+# ============================================================
+def show_plots(model_name, y_test, y_score, y_pred):
+
+    fig_roc, fig_pr, fig_hist, fig_cm = plot_all_metrics(
+        model_name, y_test, y_score, y_pred, st=None
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.image(fig_to_bytes(fig_roc), caption="ROC Curve", width=350)
+        st.image(fig_to_bytes(fig_hist), caption="Score Distribution", width=350)
+
+    with col2:
+        st.image(fig_to_bytes(fig_pr), caption="Precision-Recall Curve", width=350)
+        st.image(fig_to_bytes(fig_cm), caption="Confusion Matrix", width=350)
 
 
 # ============================================================
@@ -49,114 +80,55 @@ def render():
     if st.button("🚀 Run"):
 
         # =====================================================
-        # Logistic Regression
+        # BASELINE MODELS (No repetition)
         # =====================================================
-        if option == "Train Logistic Regression":
-            model, metrics, X_test, y_test, y_score = train_single_model("logistic")
+        simple_models = {
+            "Train Logistic Regression": ("logistic", None),
+            "Train Random Forest": ("random_forest", None),
+            "Train XGBoost": ("xgboost", None),
+            "Train Voting Classifier": ("voting_classifier", get_voting())
+        }
 
-            st.success("✔ Logistic Regression trained & saved!")
+        if option in simple_models:
+
+            model_name, external_model = simple_models[option]
+
+            if external_model:
+                model, metrics, X_test, y_test, y_score = train_single_model(
+                    model_name, model=external_model
+                )
+            else:
+                model, metrics, X_test, y_test, y_score = train_single_model(model_name)
+
+            st.success(f"✔ {option} trained & saved!")
             st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
 
             y_pred = model.predict(X_test)
-            plot_all_metrics("Logistic Regression", y_test, y_score, y_pred, st)
 
+            # Show all plots here
+            show_plots(option, y_test, y_score, y_pred)
+            return
 
         # =====================================================
-        # Random Forest
+        # RESAMPLING MODELS
         # =====================================================
-        elif option == "Train Random Forest":
-            model, metrics, X_test, y_test, y_score = train_single_model("random_forest")
+        if option in ["Downsample + XGBoost", "SMOTE + XGBoost", "Both (SMOTE + ENN) + XGBoost"]:
 
-            st.success("✔ Random Forest trained & saved!")
+            kind = option.split(" ")[0].lower()  # down / smote / both
+            if kind == "both": kind = "both"
+
+            model, metrics, X_test, y_test, y_score = train_with_resampling(kind)
+
+            st.success(f"✔ {option} trained & saved!")
             st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
 
             y_pred = model.predict(X_test)
-            plot_all_metrics("Random Forest", y_test, y_score, y_pred, st)
 
-
-        # =====================================================
-        # XGBoost
-        # =====================================================
-        elif option == "Train XGBoost":
-            model, metrics, X_test, y_test, y_score = train_single_model("xgboost")
-
-            st.success("✔ XGBoost trained & saved!")
-            st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
-
-            y_pred = model.predict(X_test)
-            plot_all_metrics("XGBoost", y_test, y_score, y_pred, st)
-
+            show_plots(option, y_test, y_score, y_pred)
+            return
 
         # =====================================================
-        # Voting Classifier
-        # =====================================================
-        elif option == "Train Voting Classifier":
-            model, metrics, X_test, y_test, y_score = train_single_model(
-                "voting_classifier",
-                model=get_voting()
-            )
-
-            st.success("✔ Voting Classifier trained & saved!")
-            st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
-
-            y_pred = model.predict(X_test)
-            plot_all_metrics("Voting Classifier", y_test, y_score, y_pred, st)
-
-
-        # =====================================================
-        # Focal NN
-        # =====================================================
-        # elif option == "Train Focal Loss Neural Network":
-        #     train, test = load_processed()
-        #     X_train, X_test, y_train, y_test = prep_data(train, test)
-
-        #     model, f1 = train_focal_model(X_train, y_train, X_test, y_test)
-        #     save_model(model, "focal_nn_model")
-
-        #     st.success(f"✔ Focal NN trained & saved! F1 = {f1:.4f}")
-
-
-        # =====================================================
-        # Downsample
-        # =====================================================
-        elif option == "Downsample + XGBoost":
-            model, metrics, X_test, y_test, y_score = train_with_resampling("down")
-
-            st.success("✔ Downsample + XGB trained & saved!")
-            st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
-
-            y_pred = model.predict(X_test)
-            plot_all_metrics("Downsample + XGBoost", y_test, y_score, y_pred, st)
-
-
-        # =====================================================
-        # SMOTE
-        # =====================================================
-        elif option == "SMOTE + XGBoost":
-            model, metrics, X_test, y_test, y_score = train_with_resampling("smote")
-
-            st.success("✔ SMOTE + XGB trained & saved!")
-            st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
-
-            y_pred = model.predict(X_test)
-            plot_all_metrics("SMOTE + XGBoost", y_test, y_score, y_pred, st)
-
-
-        # =====================================================
-        # BOTH (SMOTE + ENN)
-        # =====================================================
-        elif option == "Both (SMOTE + ENN) + XGBoost":
-            model, metrics, X_test, y_test, y_score = train_with_resampling("both")
-
-            st.success("✔ Both Resampling + XGB trained & saved!")
-            st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
-
-            y_pred = model.predict(X_test)
-            plot_all_metrics("Both (SMOTE + ENN) + XGBoost", y_test, y_score, y_pred, st)
-
-
-        # =====================================================
-        # Compare All Models
+        # COMPARE ALL MODELS
         # =====================================================
         elif option == "Compare All Models":
 
@@ -175,7 +147,7 @@ def render():
                 plot_comparison_heatmap(df, st=st)
 
             else:
-                st.warning("⚠️ No cached results found → Running full comparison...")
+                st.warning("⚠️ No cached results — running now...")
 
                 df, fig = compare_models(plot=True, save_reports=True)
 
@@ -183,13 +155,12 @@ def render():
                 st.subheader("📊 Performance Table")
                 st.dataframe(df)
 
-                st.subheader("🔥 Comparison Heatmap")
+                st.subheader("🔥 Heatmap")
                 plot_comparison_heatmap(df, st=st)
 
-
         # =====================================================
-        # Best Model Selection
+        # BEST MODEL SELECTOR
         # =====================================================
         elif option == "Select Best Model":
             best_model, best_f1 = select_best()
-            st.success(f"🔥 Best Model: {best_model}\n🎯 F1 Score: {best_f1:.4f}")
+            st.success(f"🏆 Best Model: {best_model}\n🎯 F1 Score: {best_f1:.4f}")

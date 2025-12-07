@@ -3,16 +3,17 @@
 Fraud detection is a highly **imbalanced binary classification problem**, where fraudulent transactions represent less than **0.18%** of all records.  
 This project provides a **full production-ready fraud detection pipeline** built using:
 
-- Classical Machine Learning models  
-- Ensemble Learning  
-- Deep Learning with Focal Loss  
-- Advanced resampling techniques  
-- Automated evaluation & model comparison  
-- Streamlit web interface for training and prediction  
+- Classical Machine Learning models
+- Ensemble Learning
+- Deep Learning with Focal Loss
+- Advanced resampling techniques
+- Automated evaluation & model comparison
+- Streamlit web interface for training and prediction
 
 ---
 
 # 📁 Project Structure
+
 ```
 .
 ├── data
@@ -121,16 +122,21 @@ This project provides a **full production-ready fraud detection pipeline** built
 # 🔧 Installation
 
 ### 1️⃣ Clone the repository
+
 ```bash
 git clone https://github.com/ahmedkhalidak/fraud-detection.git
 cd fraud-detection
 ```
+
 ### 2️⃣ Create a Conda environment
+
 ```
 conda create -n fraud-env python=3.10 -y
 conda activate fraud-env
 ```
+
 ### 3️⃣ Install dependencies
+
 ```
 pip install -r requirements.txt
 ```
@@ -142,36 +148,46 @@ Download the dataset from Kaggle:
 🔗 https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
 
 - Place creditcard.csv inside:
+
 ```
 data/raw/creditcard.csv
 ```
+
 - Then generate train/test split:
+
 ```
 python src/data/split.py
 ```
+
 # 🔍 Exploratory Data Analysis
+
 ### Key observations:
 
-* No missing values
+- No missing values
 
-* PCA-transformed features `V1–V28`
+- PCA-transformed features `V1–V28`
 
-* Highly imbalanced dataset:
-  - Class 0 (Normal): `284,315` samples  
-  - Class 1 (Fraud):     `492` samples  
+- Highly imbalanced dataset:
+  - Class 0 (Normal): `284,315` samples
+  - Class 1 (Fraud): `492` samples
 
 # 🧱 Baseline Models
+
 | Model               | Notes                         |
 | ------------------- | ----------------------------- |
 | Logistic Regression | Strong recall, weak precision |
 
 # 🔥 Deep Learning with Focal Loss
+
 Standard BCE struggles with extreme imbalance.
 Focal Loss helps focus on minority (fraud) samples :
+
 ```
 loss = α * (1 - pt)^γ * BCE
 ```
+
 # 📊 Model Evaluation
+
 ROC Curves
 
 Logistic Regression
@@ -185,6 +201,7 @@ Voting Classifier
 Focal Neural Network
 
 # 🔥 Model Comparison (Heatmap)
+
 ![ Model Comparison ](reports/model_comparison_heatmap.png)
 
 Includes:
@@ -203,24 +220,30 @@ Includes:
 
 # 🧪 Streamlit Web Application
 
-* A full interactive interface to:
+- A full interactive interface to:
 
-* Train models
+- Train models
 
-* Apply SMOTE, undersampling, SMOTE+ENN
+- Apply SMOTE, undersampling, SMOTE+ENN
 
-* Visualize ROC, PR, confusion matrix
+- Visualize ROC, PR, confusion matrix
 
-* Run model comparison
+- Run model comparison
 
-* Save & load models
+- Save & load models
 
-* Predict single transactions or batch CSV
+- Predict single transactions or batch CSV
 
-* Run the app:
+- Run the app:
+
 ```
 streamlit run streamlit_app.py
 ```
+
+![alt text](<Screenshot from 2025-12-07 03-39-42.png>)
+
+![alt text](<Screenshot from 2025-12-07 03-40-10.png>)
+
 # 🏆 Best Model Selection
 
 ### Automatically selects the best-performing model based on:
@@ -234,11 +257,13 @@ streamlit run streamlit_app.py
 ### And The Best Model -> Random Forest with best Threshold
 
 Written to:
+
 ```
 reports/best_model.txt
 ```
 
 # 🧠 System Architecture
+
 ```
 flowchart TD
 
@@ -258,7 +283,9 @@ I --> J[Streamlit App]
 ```
 
 # 📦 Saved Models
+
 Exported models stored in:
+
 ```
 models/saved_models/
 

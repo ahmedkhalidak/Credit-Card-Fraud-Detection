@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-import os
 from sklearn.metrics import (
     roc_curve,
     precision_recall_curve,
@@ -10,29 +9,11 @@ from sklearn.metrics import (
 )
 
 # =====================================================
-# 🔧 Create folder for saving all plots
-# =====================================================
-PLOT_DIR = "reports/plots"
-os.makedirs(PLOT_DIR, exist_ok=True)
-
-
-# =====================================================
-# 📌 Plot All Model Evaluation Curves + SAVE THEM
+# 📌 Plot All Metrics — ALWAYS return Figure objects
 # =====================================================
 def plot_all_metrics(model_name, y_true, y_score, y_pred, st=None):
-    """
-    Generates, DISPLAYS, and SAVES:
-      ✔ ROC Curve
-      ✔ Precision-Recall Curve
-      ✔ Score Distribution Histogram
-      ✔ Confusion Matrix Heatmap
-    """
 
-    safe_name = model_name.lower().replace(" ", "_")
-
-    # ----------------------------
-    # 1) ROC Curve
-    # ----------------------------
+    # ---------------- ROC ----------------
     fpr, tpr, _ = roc_curve(y_true, y_score)
     roc_auc = auc(fpr, tpr)
 
@@ -43,56 +24,29 @@ def plot_all_metrics(model_name, y_true, y_score, y_pred, st=None):
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")
     ax.legend()
+    if st: st.pyplot(fig_roc)
 
-    roc_path = f"{PLOT_DIR}/{safe_name}_roc.png"
-    fig_roc.savefig(roc_path)
-    print(f"[Saved] {roc_path}")
-
-    if st:
-        st.pyplot(fig_roc)
-
-
-    # ----------------------------
-    # 2) Precision-Recall Curve
-    # ----------------------------
+    # ---------------- PR Curve ----------------
     precision, recall, _ = precision_recall_curve(y_true, y_score)
     pr_auc = auc(recall, precision)
 
     fig_pr, ax = plt.subplots(figsize=(6, 4))
     ax.plot(recall, precision, label=f"AUC = {pr_auc:.4f}")
-    ax.set_title(f"{model_name} - Precision-Recall Curve")
+    ax.set_title(f"{model_name} - Precision Recall Curve")
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
     ax.legend()
+    if st: st.pyplot(fig_pr)
 
-    pr_path = f"{PLOT_DIR}/{safe_name}_pr.png"
-    fig_pr.savefig(pr_path)
-    print(f"[Saved] {pr_path}")
-
-    if st:
-        st.pyplot(fig_pr)
-
-
-    # ----------------------------
-    # 3) Score Distribution Histogram
-    # ----------------------------
+    # ---------------- Histogram ----------------
     fig_hist, ax = plt.subplots(figsize=(6, 4))
     sns.histplot(y_score, kde=True, bins=30, color="blue", ax=ax)
     ax.set_title(f"{model_name} - Score Distribution")
     ax.set_xlabel("Predicted Probability")
     ax.set_ylabel("Count")
+    if st: st.pyplot(fig_hist)
 
-    hist_path = f"{PLOT_DIR}/{safe_name}_hist.png"
-    fig_hist.savefig(hist_path)
-    print(f"[Saved] {hist_path}")
-
-    if st:
-        st.pyplot(fig_hist)
-
-
-    # ----------------------------
-    # 4) Confusion Matrix
-    # ----------------------------
+    # ---------------- Confusion Matrix ----------------
     cm = confusion_matrix(y_true, y_pred)
 
     fig_cm, ax = plt.subplots(figsize=(6, 4))
@@ -100,38 +54,29 @@ def plot_all_metrics(model_name, y_true, y_score, y_pred, st=None):
     ax.set_title(f"{model_name} - Confusion Matrix")
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Actual")
+    if st: st.pyplot(fig_cm)
 
-    cm_path = f"{PLOT_DIR}/{safe_name}_cm.png"
-    fig_cm.savefig(cm_path)
-    print(f"[Saved] {cm_path}")
-
-    if st:
-        st.pyplot(fig_cm)
-
-
-    return {
-        "roc": roc_path,
-        "pr": pr_path,
-        "hist": hist_path,
-        "cm": cm_path
-    }
+    return fig_roc, fig_pr, fig_hist, fig_cm
 
 
 # =====================================================
-# 📌 Comparison Heatmap (also SAVED)
+# 📌 Comparison Heatmap (Used in Streamlit Compare Page)
 # =====================================================
-def plot_comparison_heatmap(df, st=None, save_path="reports/model_comparison_heatmap.png"):
+def plot_comparison_heatmap(df, st=None, save_path=None):
     """
-    رسم Heatmap لنتائج مقارنة النماذج
+    df: DataFrame returned from compare_models()
+    st: Streamlit object (optional)
+    save_path: if provided → saves the heatmap to file
     """
 
     fig, ax = plt.subplots(figsize=(18, 8))
     sns.heatmap(df, annot=True, cmap="viridis", fmt=".3f", ax=ax)
     ax.set_title("Model Performance Comparison (Heatmap)", fontsize=18)
-
     fig.tight_layout()
-    fig.savefig(save_path)
-    print(f"[Saved] Heatmap → {save_path}")
+
+    if save_path:
+        fig.savefig(save_path)
+        print(f"[Saved] Heatmap → {save_path}")
 
     if st:
         st.pyplot(fig)
