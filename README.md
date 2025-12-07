@@ -35,9 +35,9 @@ This project provides a **full production-ready fraud detection pipeline** built
 │   └── 02_model_baseline.ipynb
 ├── page_predict.py
 ├── page_train.py
-├── __pycache__
-│   ├── page_predict.cpython-310.pyc
-│   └── page_train.cpython-310.pyc
+├── 
+│   
+│   
 ├── README.md
 ├── reports
 │   ├── best_model.txt
@@ -69,8 +69,8 @@ This project provides a **full production-ready fraud detection pipeline** built
 │   ├── data
 │   │   ├── __init__.py
 │   │   ├── load_data.py
-│   │   ├── __pycache__
-│   │   │   └── load_data.cpython-310.pyc
+│   │   ├─
+│   │   │   
 │   │   └── split.py
 │   ├── __init__.py
 │   ├── main.py
@@ -78,12 +78,12 @@ This project provides a **full production-ready fraud detection pipeline** built
 │   │   ├── foacl
 │   │   │   ├── focal_loss.py
 │   │   │   └── fraud_nn.py
-│   │   ├── __pycache__
-│   │   │   ├── focal_loss.cpython-310.pyc
-│   │   │   ├── fraud_nn.cpython-310.pyc
-│   │   │   ├── random_forest.cpython-310.pyc
-│   │   │   ├── voting_classifier.cpython-310.pyc
-│   │   │   └── xgboost_model.cpython-310.pyc
+│   │   ├── 
+│   │   │  
+│   │   │   
+│   │   │ 
+│   │   │  
+│   │   │   
 │   │   ├── random_forest.py
 │   │   ├── voting_classifier.py
 │   │   └── xgboost_model.py
@@ -92,28 +92,23 @@ This project provides a **full production-ready fraud detection pipeline** built
 │   │   ├── focal
 │   │   │   └── train_focal.py
 │   │   ├── model_selector.py
-│   │   ├── __pycache__
-│   │   │   ├── evaluate.cpython-310.pyc
-│   │   │   ├── model_selector.cpython-310.pyc
-│   │   │   ├── trainer.cpython-310.pyc
-│   │   │   └── train_focal.cpython-310.pyc
+│   │   ├─
+│   │   │   
+│   │   │   
+│   │   │  
+│   │   │  
 │   │   └── trainer.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-310.pyc
-│   │   └── page_train.cpython-310.pyc
+│   ├
+│   │   
+│   │   
 │   └── utils
 │       ├── metrics_extended.py
 │       ├── plot_all.py
 │       ├── preprocess.py
-│       ├── __pycache__
-│       │   ├── metrics_extended.cpython-310.pyc
-│       │   ├── plot_all.cpython-310.pyc
-│       │   ├── plot_curves.cpython-310.pyc
-│       │   ├── preprocess.cpython-310.pyc
-│       │   ├── resampling.cpython-310.pyc
-│       │   └── save_load.cpython-310.pyc
 │       ├── resampling.py
-│       └── save_load.py
+│       │── save_load.py
+│      
+│       
 └── streamlit_app.py
 ```
 
