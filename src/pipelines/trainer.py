@@ -1,3 +1,5 @@
+import os
+import pickle
 import pandas as pd
 from utils.preprocess import split_features_labels, scale_time_amount
 from utils.resampling import smote_resample, undersample, both_resample
@@ -7,6 +9,8 @@ from sklearn.linear_model import LogisticRegression
 from models.random_forest import get_rf
 from models.xgboost_model import get_xgb
 from models.voting_classifier import get_voting
+
+from utils.save_load import save_model
 
 
 # =====================
@@ -20,7 +24,6 @@ def load_processed():
 
 # =====================
 # Preprocess classical models
-# (RF, XGB, LR)
 # =====================
 def prep_data(train, test):
     X_train, y_train = split_features_labels(train)
@@ -30,9 +33,12 @@ def prep_data(train, test):
     return X_train, X_test, y_train, y_test
 
 
+
 # =====================
-# Train classical model
+# Train classical model (Auto-save)
 # =====================
+from utils.metrics_extended import compute_full_metrics
+
 def train_single_model(name=None, model=None):
     train, test = load_processed()
     X_train, X_test, y_train, y_test = prep_data(train, test)
@@ -44,15 +50,26 @@ def train_single_model(name=None, model=None):
     elif name == "xgboost":
         model = get_xgb()
 
+    # Train
     model.fit(X_train, y_train)
-    preds = model.predict(X_test)
-    f1 = f1_score(y_test, preds)
 
-    print(f"{name} F1 Score = {f1:.4f}")
+    # Predictions
+    y_pred = model.predict(X_test)
+    y_score = model.predict_proba(X_test)[:, 1]
+
+    # Metrics
+    metrics = compute_full_metrics(model, X_test, y_test)
+
+    # Auto save
+    save_model(model, f"{name}_model")
+
+    return model, metrics, X_test, y_test, y_score
+
+
 
 
 # =====================
-# With SMOTE / Under / Both
+# Resampling training (Auto-save)
 # =====================
 def train_with_resampling(kind):
     train, test = load_processed()
@@ -68,7 +85,10 @@ def train_with_resampling(kind):
     model = get_xgb()
     model.fit(X_train, y_train)
 
-    preds = model.predict(X_test)
-    f1 = f1_score(y_test, preds)
+    y_pred = model.predict(X_test)
+    y_score = model.predict_proba(X_test)[:, 1]
 
-    print(f"{kind} sampling → F1 = {f1}")
+    metrics = compute_full_metrics(model, X_test, y_test)
+    save_model(model, f"xgb_{kind}_model")
+
+    return model, metrics, X_test, y_test, y_score

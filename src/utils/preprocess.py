@@ -8,7 +8,7 @@ def split_features_labels(df, target="Class"):
     return X, y
 
 from sklearn.preprocessing import RobustScaler
-
+# for classical 
 def scale_time_amount(X_train, X_test):
     scaler = RobustScaler()
     X_train[['Time', 'Amount']] = scaler.fit_transform(X_train[['Time', 'Amount']])
@@ -17,7 +17,7 @@ def scale_time_amount(X_train, X_test):
 
 
 from sklearn.preprocessing import StandardScaler
-
+# For NN model 
 def scale_all_features(X_train, X_test):
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)

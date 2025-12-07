@@ -3,7 +3,7 @@ from pipelines.evaluate import compare_models
 from models.voting_classifier import get_voting
 from models.xgboost_model import get_xgb
 from models.random_forest import get_rf
-from pipelines.train_focal import train_focal_model
+from src.pipelines.focal.train_focal import train_focal_model
 from pipelines.model_selector import select_best
 
 def main_menu():
@@ -46,7 +46,7 @@ def main():
             print("\n=== Training Focal Loss Neural Network ===")
 
             from pipelines.trainer import load_processed, prep_data
-            from pipelines.train_focal import train_focal_model
+            from src.pipelines.focal.train_focal import train_focal_model
 
             train, test = load_processed()
             X_train, X_test, y_train, y_test = prep_data(train, test)
